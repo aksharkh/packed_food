@@ -9,14 +9,14 @@
   --color-sky: #4cc9f0;
   --color-mirchi: #ff3b3b;
   --color-ink: #1a0b2e;
-  --color-cream: #fff6e5;
-  --font-display: var(--font-luckiest);
+  --color-cream: #f7f4ee;
+  --font-display: var(--font-anton);
   --font-sans: var(--font-baloo);
-  --font-hand: var(--font-kalam);
+  --font-hand: var(--font-baloo);
 }
 
 :root {
-  --background: #fff6e5;
+  --background: #f7f4ee;
   --foreground: #1a0b2e;
 }
 
@@ -33,63 +33,79 @@ body {
   overflow-x: clip;
 }
 
+/* Design v2 — "immersive flavour world": glossy, borderless, big italic type.
+   Class names are kept from v1 so every inner page picks up the new look. */
 @layer components {
   .display {
     font-family: var(--font-display);
     text-transform: uppercase;
-    line-height: 0.92;
-    letter-spacing: 0.01em;
+    font-style: italic;
+    line-height: 0.95;
+    letter-spacing: 0.005em;
   }
   .stroke-ink {
-    -webkit-text-stroke: 2px #1a0b2e;
-    paint-order: stroke fill;
+    -webkit-text-stroke: 0;
   }
   .outline-only {
     color: transparent;
-    -webkit-text-stroke: 2px currentColor;
+    -webkit-text-stroke: 1.5px currentColor;
   }
   .pop-shadow {
-    text-shadow: 3px 3px 0 #1a0b2e, 5px 5px 0 rgb(0 0 0 / 0.15);
+    text-shadow: 0 8px 30px rgb(0 0 0 / 0.28);
   }
   .brutal {
-    border: 3px solid #1a0b2e;
-    box-shadow: 6px 6px 0 #1a0b2e;
+    border: 0;
+    box-shadow: 0 1px 2px rgb(26 11 46 / 0.06), 0 24px 50px -24px rgb(26 11 46 / 0.4);
   }
   .brutal-sm {
-    border: 2.5px solid #1a0b2e;
-    box-shadow: 3px 3px 0 #1a0b2e;
+    border: 1px solid rgb(26 11 46 / 0.08);
+    box-shadow: 0 8px 20px -12px rgb(26 11 46 / 0.35);
   }
   .btn-pop {
-    border: 3px solid #1a0b2e;
-    box-shadow: 4px 4px 0 #1a0b2e;
-    transition: transform 0.12s, box-shadow 0.12s, background-color 0.2s;
+    border: 0;
+    box-shadow: 0 12px 26px -12px rgb(26 11 46 / 0.6);
+    transition: transform 0.18s cubic-bezier(0.3, 1.4, 0.5, 1), box-shadow 0.18s, filter 0.2s;
   }
   .btn-pop:hover {
-    transform: translate(-2px, -2px) rotate(-1deg);
-    box-shadow: 6px 6px 0 #1a0b2e;
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.06);
   }
   .btn-pop:active {
-    transform: translate(4px, 4px);
-    box-shadow: 0 0 0 #1a0b2e;
+    transform: scale(0.96);
   }
   .halftone {
-    background-image: radial-gradient(rgb(26 11 46 / 0.14) 1.6px, transparent 1.8px);
-    background-size: 16px 16px;
+    background-image: none;
   }
   .sunburst {
-    background: repeating-conic-gradient(from 0deg, rgb(255 255 255 / 0.22) 0 7.5deg, transparent 7.5deg 15deg);
+    background: radial-gradient(closest-side, rgb(255 255 255 / 0.45), rgb(255 255 255 / 0) 70%);
     border-radius: 9999px;
   }
-  .zigzag-top {
-    --z: 14px;
-    mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 90deg, #0000 91deg) 50% / calc(2 * var(--z)) 100%;
-  }
-  /* Indian truck-art style border */
   .truck-border {
-    background:
-      repeating-linear-gradient(135deg, #ff3d7f 0 14px, #ffd23f 14px 28px, #19c27a 28px 42px, #4cc9f0 42px 56px, #ff7a00 56px 70px);
+    background: linear-gradient(120deg, #ff3d7f, #ff7a00 50%, #ffd23f);
+  }
+  .glass {
+    background: rgb(255 255 255 / 0.12);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgb(255 255 255 / 0.22);
   }
 }
+
+@keyframes swoosh-in {
+  0% { transform: translateX(60%) rotate(18deg) scale(0.7); opacity: 0; }
+  60% { transform: translateX(-4%) rotate(-4deg) scale(1.04); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes word-in {
+  0% { transform: translateY(30%) skewX(-8deg); opacity: 0; letter-spacing: 0.2em; }
+  100% { transform: none; opacity: 1; letter-spacing: 0.005em; }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-22px) rotate(calc(var(--r, 0deg) + 14deg)); }
+}
+.animate-swoosh-in { animation: swoosh-in 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.animate-word-in { animation: word-in 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.animate-drift { animation: drift var(--dur, 6s) ease-in-out infinite; }
 
 @keyframes marquee {
   to { transform: translateX(-50%); }

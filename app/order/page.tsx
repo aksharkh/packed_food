@@ -22,7 +22,7 @@ export default function TrackOrder() {
       <Nav />
       <main className="mx-auto max-w-md px-4 py-16 text-center">
         <div className="animate-bob text-7xl">🚚</div>
-        <h1 className="display stroke-ink pop-shadow mt-3 text-6xl text-haldi">Track order</h1>
+        <h1 className="display stroke-ink mt-3 text-6xl text-pink">Track order</h1>
         <form
           className="mt-6 flex gap-2"
           onSubmit={(e) => {

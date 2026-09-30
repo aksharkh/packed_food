@@ -85,7 +85,7 @@ export default function Checkout() {
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-8">
         <div className="text-center">
           <p className="font-hand text-2xl font-bold text-pink">bas thoda sa aur…</p>
-          <h1 className="display stroke-ink pop-shadow text-6xl text-haldi sm:text-8xl">Checkout</h1>
+          <h1 className="display stroke-ink text-6xl text-pink sm:text-8xl">Checkout</h1>
         </div>
 
         <form onSubmit={submit} className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">

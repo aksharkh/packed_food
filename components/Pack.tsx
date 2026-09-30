@@ -95,15 +95,40 @@ export function Face({ mood, look = { x: 0, y: 0 }, blink = true }: { mood: Mood
   );
 }
 
-function fitSize(text: string, max = 36, width = 176) {
-  return Math.min(max, width / (text.length * 0.62));
+function fitSize(text: string, max = 40, width = 170) {
+  return Math.min(max, width / (text.length * 0.5));
 }
 
-/** Illustrated snack pouch. Swap to a photo by setting `product.image`. */
+/** A single golden chip. */
+export function Chip({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  return (
+    <svg viewBox="0 0 120 90" className={className} style={style} aria-hidden>
+      <defs>
+        <radialGradient id={`chip${uid}`} cx="35%" cy="30%" r="80%">
+          <stop offset="0" stopColor="#ffe9a3" />
+          <stop offset="0.55" stopColor="#f6c34a" />
+          <stop offset="1" stopColor="#d9912a" />
+        </radialGradient>
+      </defs>
+      <path d="M10 48 C6 20 40 4 68 8 C98 12 116 32 110 54 C104 78 70 88 42 82 C22 78 12 66 10 48Z" fill={`url(#chip${uid})`} />
+      <path d="M26 40 C44 28 74 26 96 38 M22 56 C44 46 76 46 100 56" stroke="#c9801f" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.45" />
+      <path d="M30 26 C44 16 64 14 80 18" stroke="#fff" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.5" />
+      <g fill="#c2410c" opacity="0.75">
+        <circle cx="50" cy="38" r="2" />
+        <circle cx="72" cy="52" r="1.8" />
+        <circle cx="84" cy="34" r="1.5" />
+        <circle cx="38" cy="60" r="1.6" />
+        <circle cx="62" cy="66" r="2" />
+      </g>
+    </svg>
+  );
+}
+
+/** Glossy snack pouch render. Swap to a real photo by setting `product.image`.
+ *  (`mood` / `look` / `showFace` are accepted for compatibility with the v1 cartoon pack.) */
 export function Pack({
   product,
-  mood,
-  look,
   className = "",
   showFace = true,
 }: {
@@ -119,96 +144,103 @@ export function Pack({
     return <img src={product.image} alt={product.name} className={`object-contain ${className}`} />;
   }
   const { color, accent, packLine } = product;
-  const body = "M28 22 C70 14 150 14 192 22 C200 110 202 190 196 272 C150 284 70 284 24 272 C18 190 20 110 28 22Z";
+  const body = "M28 20 C70 12 150 12 192 20 C200 110 202 190 196 274 C150 286 70 286 24 274 C18 190 20 110 28 20Z";
+  const font = { fontFamily: "var(--font-anton)", fontStyle: "italic" as const };
 
   return (
     <svg viewBox="0 0 220 300" className={className} role="img" aria-label={product.name}>
       <defs>
-        <pattern id={`dots${uid}`} width="10" height="10" patternUnits="userSpaceOnUse">
-          <circle cx="2" cy="2" r="1.6" fill="#000" opacity="0.12" />
-        </pattern>
         <clipPath id={`clip${uid}`}>
           <path d={body} />
         </clipPath>
-        <linearGradient id={`shine${uid}`} x1="0" x2="1">
+        <linearGradient id={`v${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.38" />
+          <stop offset="0.35" stopColor="#fff" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.26" />
+        </linearGradient>
+        <linearGradient id={`h${uid}`} x1="0" x2="1">
+          <stop offset="0" stopColor="#000" stopOpacity="0.32" />
+          <stop offset="0.22" stopColor="#000" stopOpacity="0" />
+          <stop offset="0.8" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.3" />
+        </linearGradient>
+        <linearGradient id={`g${uid}`} x1="0" x2="1">
           <stop offset="0" stopColor="#fff" stopOpacity="0" />
-          <stop offset="0.5" stopColor="#fff" stopOpacity="0.45" />
+          <stop offset="0.5" stopColor="#fff" stopOpacity="0.55" />
           <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
+        <radialGradient id={`glow${uid}`} cx="50%" cy="58%" r="50%">
+          <stop offset="0" stopColor={accent} stopOpacity="0.9" />
+          <stop offset="1" stopColor={accent} stopOpacity="0" />
+        </radialGradient>
       </defs>
 
-      <ellipse cx="110" cy="290" rx="78" ry="7" fill="#000" opacity="0.18" />
-      <path d={body} fill={color} />
+      <ellipse cx="110" cy="291" rx="74" ry="6" fill="#000" opacity="0.22" />
       <g clipPath={`url(#clip${uid})`}>
-        <rect width="220" height="300" fill={`url(#dots${uid})`} />
-        {/* sunburst behind the face */}
-        <g transform="translate(110 138)" opacity="0.18">
-          {Array.from({ length: 16 }, (_, i) => (
-            <path key={i} d="M0 0 L-9 -140 L9 -140Z" fill="#fff" transform={`rotate(${i * 22.5})`} />
-          ))}
-        </g>
+        <rect width="220" height="300" fill={color} />
+        <rect width="220" height="300" fill={`url(#glow${uid})`} />
+        {/* swoosh */}
+        <path d="M-10 150 C60 110 150 190 230 130 L230 300 L-10 300Z" fill="#000" opacity="0.09" />
+        <rect width="220" height="300" fill={`url(#v${uid})`} />
+        <rect width="220" height="300" fill={`url(#h${uid})`} />
         {/* crimps */}
-        <rect x="0" y="0" width="220" height="44" fill="#000" opacity="0.16" />
-        <rect x="0" y="254" width="220" height="40" fill="#000" opacity="0.16" />
-        {Array.from({ length: 20 }, (_, i) => (
-          <g key={i} stroke={INK} strokeWidth="1.5" opacity="0.25">
-            <line x1={34 + i * 8} y1="22" x2={34 + i * 8} y2="40" />
-            <line x1={34 + i * 8} y1="258" x2={34 + i * 8} y2="276" />
+        <rect y="12" width="220" height="22" fill="#fff" opacity="0.14" />
+        <rect y="262" width="220" height="24" fill="#000" opacity="0.14" />
+        {Array.from({ length: 27 }, (_, i) => (
+          <g key={i} stroke="#fff" strokeWidth="1" opacity="0.28">
+            <line x1={30 + i * 6} y1="15" x2={30 + i * 6} y2="32" />
+            <line x1={30 + i * 6} y1="265" x2={30 + i * 6} y2="282" />
           </g>
         ))}
-        <rect x="40" y="50" width="16" height="200" rx="8" fill={`url(#shine${uid})`} />
+        {/* gloss streak */}
+        <rect x="38" y="36" width="26" height="224" fill={`url(#g${uid})`} transform="skewX(-4)" />
       </g>
-      <path d={body} fill="none" stroke={INK} strokeWidth="4.5" strokeLinejoin="round" />
 
-      {/* brand */}
-      <g transform="translate(110 70) rotate(-6)">
-        <path d="M-70 -18 L70 -22 L66 16 L-66 18Z" fill={INK} />
-        <text
-          textAnchor="middle"
-          y="9"
-          fontSize="27"
-          fill={accent}
-          style={{ fontFamily: "var(--font-luckiest)", letterSpacing: "1px" }}
-        >
-          DHAMAKA!
+      {/* brand badge */}
+      <g transform="translate(110 70)">
+        <ellipse rx="62" ry="24" fill="#fff" />
+        <ellipse rx="58" ry="20.5" fill={"#1a0b2e"} />
+        <text textAnchor="middle" y="8.5" fontSize="23" fill={accent} style={{ ...font, letterSpacing: "1px" }}>
+          DHAMAKA
         </text>
       </g>
-
-      {/* veg mark + weight */}
-      <rect x="34" y="96" width="15" height="15" rx="2" fill="#fff" stroke="#1f8a3b" strokeWidth="2.5" />
-      <circle cx="41.5" cy="103.5" r="4" fill="#1f8a3b" />
-      <g transform="translate(174 104) rotate(10)">
-        <circle r="17" fill="#fff" stroke={INK} strokeWidth="3" />
-        <text textAnchor="middle" y="5" fontSize="12" fill={INK} style={{ fontFamily: "var(--font-luckiest)" }}>
-          {product.weight}
-        </text>
-      </g>
-
-      {showFace && (
-        <g transform="translate(110 146)">
-          <circle r="44" fill={accent} stroke={INK} strokeWidth="4" />
-          <Face mood={mood ?? product.mood} look={look} />
-        </g>
-      )}
 
       {/* flavour name */}
       {packLine.map((line, i) => (
         <text
           key={i}
           x="110"
-          y={220 + i * 30}
+          y={132 + i * 36}
           textAnchor="middle"
-          fontSize={fitSize(line, i === 0 ? 30 : 36)}
+          fontSize={fitSize(line)}
           fill={i === 0 ? "#fff" : accent}
-          stroke={INK}
-          strokeWidth="6"
-          paintOrder="stroke"
-          strokeLinejoin="round"
-          style={{ fontFamily: "var(--font-luckiest)" }}
+          style={{ ...font, filter: "drop-shadow(0 2px 0 rgba(0,0,0,.35))" }}
         >
           {line}
         </text>
       ))}
+
+      {/* chips + hero ingredient */}
+      {showFace && (
+        <g>
+          <g transform="translate(62 210) rotate(-18) scale(0.62)">
+            <path d="M10 48 C6 20 40 4 68 8 C98 12 116 32 110 54 C104 78 70 88 42 82 C22 78 12 66 10 48Z" fill="#f2b93b" />
+            <path d="M30 26 C44 16 64 14 80 18" stroke="#fff" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.5" />
+          </g>
+          <g transform="translate(100 196) rotate(14) scale(0.7)">
+            <path d="M10 48 C6 20 40 4 68 8 C98 12 116 32 110 54 C104 78 70 88 42 82 C22 78 12 66 10 48Z" fill="#f8cf5c" />
+            <path d="M26 40 C44 28 74 26 96 38" stroke="#c9801f" strokeWidth="3" fill="none" opacity="0.4" />
+            <path d="M30 26 C44 16 64 14 80 18" stroke="#fff" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.55" />
+          </g>
+          <text x="58" y="206" fontSize="30">{product.ingredients[1]?.emoji ?? product.ingredients[0].emoji}</text>
+        </g>
+      )}
+
+      <text x="186" y="256" textAnchor="end" fontSize="11" fill="#fff" opacity="0.85" style={font}>
+        NET WT {product.weight}
+      </text>
+      <rect x="32" y="244" width="13" height="13" rx="2" fill="#fff" stroke="#1f8a3b" strokeWidth="2" />
+      <circle cx="38.5" cy="250.5" r="3.4" fill="#1f8a3b" />
     </svg>
   );
 }

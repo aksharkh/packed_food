@@ -1,14 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2, Kalam, Luckiest_Guy } from "next/font/google";
+import { Anton, Baloo_2 } from "next/font/google";
 import { CartProvider } from "@/components/CartContext";
 import { CartDrawer } from "@/components/CartDrawer";
 import { Mascot } from "@/components/Mascot";
 import { SITE } from "@/lib/config";
 import "./globals.css";
 
-const luckiest = Luckiest_Guy({ variable: "--font-luckiest", subsets: ["latin"], weight: "400" });
+const anton = Anton({ variable: "--font-anton", subsets: ["latin"], weight: "400" });
 const baloo = Baloo_2({ variable: "--font-baloo", subsets: ["latin", "devanagari"] });
-const kalam = Kalam({ variable: "--font-kalam", subsets: ["latin"], weight: ["400", "700"] });
 
 export const metadata: Metadata = {
   title: `${SITE.full} — ${SITE.tagline}`,
@@ -16,12 +15,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ff3d7f",
+  themeColor: "#140a1f",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${luckiest.variable} ${baloo.variable} ${kalam.variable} antialiased`}>
+    <html lang="en" className={`${anton.variable} ${baloo.variable} antialiased`}>
       <body className="min-h-dvh font-sans">
         <CartProvider>
           {children}

@@ -1,6 +1,6 @@
 import { MobileCartBar } from "@/components/CartDrawer";
 import { Footer } from "@/components/Footer";
-import { Combos, Duo, Flavours, Hero, HowMade, Inside, Marquees, Reviews, TruckBanner } from "@/components/Home";
+import { Combos, Duo, Flavours, Hero, HowMade, Marquees, Reviews, TruckBanner } from "@/components/Home";
 import { Nav } from "@/components/Nav";
 
 export default function Home() {
@@ -11,7 +11,6 @@ export default function Home() {
         <Hero />
         <Marquees />
         <Flavours />
-        <Inside />
         <HowMade />
         <Combos />
         <TruckBanner />

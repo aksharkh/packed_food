@@ -1,18 +1,16 @@
 import type { ReactNode } from "react";
-import { Bunting } from "./Decor";
+import { Chip } from "./Pack";
 
-export function PageHeader({ kicker, title, sub, bg = "#FFD23F", children }: { kicker: string; title: ReactNode; sub?: string; bg?: string; children?: ReactNode }) {
+export function PageHeader({ kicker, title, sub, bg = "#FF7A00", children }: { kicker: string; title: ReactNode; sub?: string; bg?: string; children?: ReactNode }) {
   return (
-    <section className="relative -mt-[76px] overflow-hidden border-b-[3px] border-ink pb-12 pt-28 text-center" style={{ background: bg }}>
-      <div className="halftone absolute inset-0" />
-      <div className="sunburst animate-spin-slow absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute inset-x-0 top-[76px] opacity-90">
-        <Bunting count={16} />
-      </div>
-      <div className="relative mx-auto max-w-3xl px-4 pt-8">
-        <p className="font-hand text-2xl font-bold">{kicker}</p>
-        <h1 className="display stroke-ink pop-shadow mt-1 text-6xl text-white sm:text-8xl">{title}</h1>
-        {sub && <p className="mx-auto mt-4 max-w-lg text-lg font-semibold">{sub}</p>}
+    <section className="relative -mt-[76px] overflow-hidden pb-14 pt-32 text-center text-white" style={{ background: `radial-gradient(120% 120% at 50% 0%, ${bg} 0%, #1a0b2e 120%)` }}>
+      <Chip className="animate-drift absolute left-[6%] top-28 w-20 opacity-90" style={{ "--r": "-20deg" } as React.CSSProperties} />
+      <Chip className="animate-drift absolute right-[8%] top-40 w-28 blur-[1px]" style={{ "--r": "30deg", "--dur": "7s" } as React.CSSProperties} />
+      <Chip className="animate-drift absolute bottom-6 left-[22%] w-14 blur-[2px]" style={{ "--r": "60deg", "--dur": "8s" } as React.CSSProperties} />
+      <div className="relative mx-auto max-w-3xl px-4">
+        <p className="text-sm font-extrabold uppercase tracking-[.3em] text-white/70">{kicker}</p>
+        <h1 className="display pop-shadow mt-3 text-7xl sm:text-9xl">{title}</h1>
+        {sub && <p className="mx-auto mt-4 max-w-lg text-lg font-medium text-white/85">{sub}</p>}
         {children}
       </div>
     </section>

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { rupees } from "@/lib/config";
 import { PRODUCTS, findProduct } from "@/lib/products";
 import { MobileCartBar } from "./CartDrawer";
-import { Burst, Reveal, Spice, VegMark } from "./Decor";
+import { Reveal, Spice, VegMark } from "./Decor";
 import { Footer } from "./Footer";
 import { STEPS } from "./Home";
 import { Nav } from "./Nav";
@@ -32,8 +32,8 @@ export function ProductView({ slug }: { slug: string }) {
       <Nav />
       <main>
         <section
-          className="relative -mt-[76px] overflow-hidden border-b-[3px] border-ink pb-12 pt-28"
-          style={{ background: p.bg }}
+          className="relative -mt-[76px] overflow-hidden pb-14 pt-32 text-white"
+          style={{ background: `radial-gradient(90% 90% at 30% 40%, ${p.bg} 0%, ${p.color} 50%, #1a0b2e 140%)` }}
           onPointerMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             setTilt({ x: ((e.clientX - r.left) / r.width) * 2 - 1, y: ((e.clientY - r.top) / r.height) * 2 - 1 });
@@ -56,11 +56,7 @@ export function ProductView({ slug }: { slug: string }) {
                   <Pack product={p} look={tilt} mood={poked % 3 === 1 ? "shocked" : poked % 3 === 2 ? "wink" : undefined} className="h-80 w-auto drop-shadow-[10px_14px_0_rgba(26,11,46,.25)] sm:h-[420px]" />
                 </div>
               </button>
-              <Burst color="#fff" spin className="absolute right-2 top-2 h-24 w-24 sm:right-10">
-                <span className="block text-2xl">{rupees(p.price)}</span>
-                <span className="block text-xs">{p.weight}</span>
-              </Burst>
-              <p className="font-hand absolute bottom-0 left-4 -rotate-6 text-lg font-bold">psst… tap me 👆</p>
+                            
             </div>
 
             <div className="relative">
@@ -77,7 +73,7 @@ export function ProductView({ slug }: { slug: string }) {
               <p className="mt-3 flex items-center gap-2 font-bold">Teekhapan: <Spice level={p.spice} /></p>
               <div className="mt-6 flex flex-wrap items-center gap-4">
                 <span className="display text-5xl">{rupees(p.price)}</span>
-                <AddButton product={p} className="px-7 py-3 text-xl" />
+                <AddButton product={p} light className="px-7 py-3 text-lg" />
               </div>
               <p className="mt-4 text-sm font-bold">☕ Best with: {p.pairs}</p>
             </div>

@@ -5,166 +5,179 @@ import { useEffect, useRef, useState } from "react";
 import { rupees } from "@/lib/config";
 import { CATEGORY_FILTERS, COMBOS, PRODUCTS, findProduct, type Combo } from "@/lib/products";
 import { useAddFrom } from "./CartContext";
-import { Burst, Marquee, Reveal, Spice, Squiggle } from "./Decor";
-import { Pack } from "./Pack";
+import { Marquee, Reveal, Spice } from "./Decor";
+import { Chip, Pack } from "./Pack";
 import { AddButton, ProductCard } from "./ProductCard";
 
-/* ─────────────────────────────── HERO ─────────────────────────────── */
+/* ───────────────────────── HERO: FLAVOUR WORLD ───────────────────────── */
+
+// Flying chips: position (%), width (px), rotation, parallax depth, blur.
+const CHIPS = [
+  { x: 6, y: 20, w: 110, r: -24, d: 2.2, blur: 0 },
+  { x: 82, y: 14, w: 84, r: 32, d: 1.4, blur: 1 },
+  { x: 14, y: 66, w: 64, r: 50, d: 0.9, blur: 2 },
+  { x: 74, y: 62, w: 130, r: -12, d: 2.6, blur: 0 },
+  { x: 30, y: 10, w: 48, r: 80, d: 0.6, blur: 3 },
+  { x: 62, y: 84, w: 56, r: -60, d: 0.8, blur: 2 },
+  { x: 90, y: 44, w: 60, r: 10, d: 1.1, blur: 2 },
+  { x: 2, y: 46, w: 52, r: -70, d: 0.7, blur: 3 },
+];
 
 export function Hero() {
   const [idx, setIdx] = useState(0);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [scroll, setScroll] = useState(0);
   const [auto, setAuto] = useState(true);
+  const n = PRODUCTS.length;
   const p = PRODUCTS[idx];
+  const go = (i: number) => {
+    setIdx((i + n) % n);
+    setAuto(false);
+  };
 
   useEffect(() => {
     if (!auto) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % PRODUCTS.length), 4500);
+    const t = setInterval(() => setIdx((i) => (i + 1) % n), 5000);
     return () => clearInterval(t);
-  }, [auto]);
+  }, [auto, n]);
+
+  useEffect(() => {
+    const on = () => setScroll(window.scrollY);
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
 
   return (
     <section
-      className="relative -mt-[76px] overflow-hidden pb-10 pt-28 transition-colors duration-700"
-      style={{ background: p.bg }}
+      className="relative -mt-[76px] flex min-h-dvh flex-col overflow-hidden pt-24 text-white transition-[background] duration-700"
+      style={{ background: `radial-gradient(90% 80% at 50% 42%, ${p.bg} 0%, ${p.color} 48%, #1a0b2e 135%)` }}
       onPointerMove={(e) => {
         const r = e.currentTarget.getBoundingClientRect();
         setTilt({ x: ((e.clientX - r.left) / r.width) * 2 - 1, y: ((e.clientY - r.top) / r.height) * 2 - 1 });
       }}
       onPointerLeave={() => setTilt({ x: 0, y: 0 })}
     >
-      <div className="halftone pointer-events-none absolute inset-0" />
+      {/* giant flavour word */}
+      <p
+        key={`w-${p.slug}`}
+        className="display animate-word-in pointer-events-none absolute inset-x-0 top-[16%] select-none whitespace-nowrap text-center text-[34vw] leading-none text-white/15 lg:top-[8%] lg:text-[26vw]"
+        aria-hidden
+      >
+        {p.packLine[0].split(" ")[0]}
+      </p>
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-4 px-5 lg:grid-cols-[1fr_1.1fr]">
-        {/* copy */}
-        <div className="relative z-10 text-center lg:text-left">
-          <p className="brutal-sm inline-block -rotate-3 rounded-full bg-white px-4 py-1 text-sm font-extrabold uppercase">🪔 100% desi · 0% palm oil</p>
-          <h1 className="display mt-4 text-[13vw] sm:text-8xl lg:text-[112px]">
-            <span className="stroke-ink pop-shadow block text-white">
-              Bhook <br className="hidden sm:block" />
-              lagi?
-            </span>
-            <span className="stroke-ink pop-shadow inline-block -rotate-3 text-haldi sm:block">Crunch</span>{" "}
-            <span className="stroke-ink pop-shadow inline-block rotate-2 text-pink sm:block">karo!</span>
-          </h1>
-          <p className="mx-auto mt-5 hidden max-w-md text-lg font-semibold sm:block lg:mx-0">
-            Chips, namkeen & healthy munchies with <b>full-on desi masala</b>. Kettle-cooked, nitrogen-packed, and delivered across India.
-          </p>
-          <div className="mt-6 hidden flex-wrap items-center justify-center gap-3 sm:flex lg:justify-start">
-            <Link href="/shop" className="btn-pop display rounded-full bg-ink px-7 py-4 text-xl text-white">
-              Shop snacks →
-            </Link>
-            <Link href="/box" className="btn-pop display rounded-full bg-white px-6 py-4 text-xl">
-              Build a box 📦
+      {/* flying chips with mouse + scroll parallax */}
+      {CHIPS.map((c, i) => (
+        <div
+          key={i}
+          className="pointer-events-none absolute transition-transform duration-300 ease-out"
+          style={{
+            left: `${c.x}%`,
+            top: `${c.y}%`,
+            width: `clamp(${c.w * 0.55}px, ${c.w / 12}vw, ${c.w}px)`,
+            filter: c.blur ? `blur(${c.blur}px)` : undefined,
+            transform: `translate(${tilt.x * c.d * -26}px, ${tilt.y * c.d * -18 - scroll * c.d * 0.18}px)`,
+            zIndex: c.d > 2 ? 20 : 1,
+          }}
+        >
+          <Chip className="animate-drift w-full" style={{ "--r": `${c.r}deg`, "--dur": `${5 + i}s`, animationDelay: `${-i}s` } as React.CSSProperties} />
+        </div>
+      ))}
+
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl flex-1 items-center gap-2 px-5 lg:grid-cols-[1fr_auto_1fr]">
+        {/* left: copy */}
+        <div className="order-2 text-center lg:order-1 lg:self-end lg:pb-16 lg:text-left">
+          <h1 className="text-xs font-extrabold uppercase tracking-[.3em] text-white/75">Bhook lagi? Crunch karo.</h1>
+          <div key={p.slug} className="animate-pop-in">
+            <h2 className="display pop-shadow mt-2 text-5xl sm:text-7xl">{p.name}</h2>
+            <p className="mx-auto mt-3 max-w-sm font-medium text-white/85 lg:mx-0">{p.tagline}</p>
+            <p className="mt-2 text-sm"><Spice level={p.spice} /></p>
+          </div>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+            <span className="display text-4xl">{rupees(p.price)}</span>
+            <AddButton product={p} light className="px-6 py-3 text-base" />
+            <Link href={`/product/${p.slug}`} className="glass rounded-full px-5 py-3 text-sm font-extrabold uppercase tracking-wide transition hover:bg-white/25">
+              Explore →
             </Link>
           </div>
         </div>
 
-        {/* pack stage */}
-        <div className="relative mx-auto grid aspect-square w-full max-w-[520px] place-items-center" style={{ perspective: 900 }}>
-          <div className="sunburst animate-spin-slow absolute inset-[-20%]" />
-          <p
-            key={`w-${p.slug}`}
-            className="display outline-only animate-pop-in pointer-events-none absolute text-[26vw] text-white/70 sm:text-[170px]"
-            aria-hidden
-          >
-            {p.packLine[0].split(" ")[0]}
-          </p>
-
-          {p.ingredients.map((ing, i) => (
-            <span
-              key={`${p.slug}-${ing.name}`}
-              className="animate-orbit pointer-events-none absolute left-1/2 top-1/2 -ml-6 -mt-6 grid h-12 w-12 place-items-center text-4xl sm:h-14 sm:w-14 sm:text-5xl"
-              style={
-                {
-                  "--orbit": "min(40vw, 215px)",
-                  "--dur": "16s",
-                  animationDelay: `${(-16 / p.ingredients.length) * i}s`,
-                } as React.CSSProperties
-              }
-            >
-              <span className="drop-shadow-[2px_3px_0_rgba(26,11,46,.35)]">{ing.emoji}</span>
-            </span>
-          ))}
-
+        {/* centre: the pack */}
+        <div className="relative order-1 mx-auto grid place-items-center lg:order-2" style={{ perspective: 1000 }}>
+          <div className="sunburst absolute h-[120%] w-[160%]" />
           <Link
             href={`/product/${p.slug}`}
-            className="relative block transition-transform duration-200 ease-out"
-            style={{ transform: `rotateY(${tilt.x * 20}deg) rotateX(${-tilt.y * 14}deg)` }}
             aria-label={p.name}
+            className="relative block transition-transform duration-200 ease-out"
+            style={{ transform: `rotateY(${tilt.x * 18}deg) rotateX(${-tilt.y * 12}deg) rotate(${-6 + tilt.x * 4}deg)` }}
           >
-            <div key={p.slug} className="animate-drop-in">
-              <Pack product={p} look={tilt} className="h-[62vw] max-h-[380px] w-auto drop-shadow-[10px_14px_0_rgba(26,11,46,.25)] sm:h-[380px]" />
+            <div key={p.slug} className="animate-swoosh-in">
+              <Pack product={p} className="animate-bob h-[44dvh] max-h-[520px] w-auto drop-shadow-[0_40px_40px_rgba(0,0,0,.45)] lg:h-[66dvh]" />
             </div>
           </Link>
+        </div>
 
-          <Burst color="#fff" spin className="absolute right-0 top-4 h-24 w-24 sm:right-4 sm:h-28 sm:w-28">
-            <span className="block text-xs">sirf</span>
-            <span className="block text-2xl">{rupees(p.price)}</span>
-          </Burst>
-          <div className="absolute bottom-6 left-0 hidden -rotate-6 sm:block">
-            <p className="font-hand text-xl font-bold">{p.name}</p>
-            <Spice level={p.spice} />
-          </div>
+        {/* right: flavour index */}
+        <div className="order-3 hidden justify-self-end lg:block">
+          <p className="mb-3 text-right text-xs font-extrabold uppercase tracking-[.3em] text-white/50">
+            {String(idx + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}
+          </p>
+          <ul className="space-y-1 text-right">
+            {PRODUCTS.map((q, i) => (
+              <li key={q.slug}>
+                <button
+                  onClick={() => go(i)}
+                  className={`display inline-flex items-center gap-3 text-xl transition-all ${i === idx ? "text-white" : "text-white/35 hover:text-white/70"}`}
+                >
+                  {q.packLine.join(" ")}
+                  <span className={`h-0.5 rounded-full bg-white transition-all ${i === idx ? "w-10" : "w-3 opacity-40"}`} />
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      {/* flavour switcher */}
-      <div className="relative mx-auto mt-4 max-w-6xl px-3">
-        <p className="font-hand mb-1 text-center text-lg font-bold">apna flavour chuno 👇</p>
-        <div className="no-scrollbar flex gap-2 overflow-x-auto px-2 pb-4 pt-3 sm:justify-center">
+      {/* bottom controls */}
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-5 pb-6 pt-4">
+        <div className="no-scrollbar flex gap-2 overflow-x-auto py-2 pl-24 lg:hidden">
           {PRODUCTS.map((q, i) => (
             <button
               key={q.slug}
-              onClick={() => {
-                setIdx(i);
-                setAuto(false);
-              }}
-              className={`shrink-0 rounded-2xl p-1 transition ${i === idx ? "brutal-sm -translate-y-2 scale-110 bg-white" : "opacity-80 hover:-translate-y-1 hover:opacity-100"}`}
+              onClick={() => go(i)}
               aria-label={q.name}
+              className={`shrink-0 rounded-2xl p-1.5 transition ${i === idx ? "glass -translate-y-1" : "opacity-60"}`}
             >
-              <Pack product={q} className="h-16 w-12" showFace={i === idx} />
+              <Pack product={q} className="h-14 w-10" showFace={false} />
             </button>
           ))}
         </div>
-        <div className="flex items-center justify-center gap-3">
-          <AddButton product={p} className="text-lg" />
-          <Link href="/shop" className="btn-pop rounded-full bg-ink px-5 py-2 font-extrabold text-white sm:hidden">
-            All snacks →
-          </Link>
+        <p className="hidden text-xs font-bold uppercase tracking-[.3em] text-white/50 lg:block">Scroll to explore ↓</p>
+        <div className="hidden gap-2 sm:flex">
+          <button onClick={() => go(idx - 1)} className="glass grid h-12 w-12 place-items-center rounded-full text-lg transition hover:bg-white/25" aria-label="Previous flavour">←</button>
+          <button onClick={() => go(idx + 1)} className="glass grid h-12 w-12 place-items-center rounded-full text-lg transition hover:bg-white/25" aria-label="Next flavour">→</button>
         </div>
       </div>
     </section>
   );
 }
 
-/* ──────────────────────────── MARQUEES ──────────────────────────── */
+/* ─────────────────────────────── MARQUEE ─────────────────────────────── */
 
 export function Marquees() {
   return (
-    <div className="relative z-10 -my-2 py-6">
-      <Marquee
-        className="brutal -rotate-2 bg-pink py-3 text-white"
-        items={["No palm oil", "Asli masala", "Kettle cooked", "Made in India", "100% veg", "Nitrogen packed"].map((t) => (
-          <span key={t} className="display text-3xl sm:text-4xl">{t}</span>
-        ))}
-        separator={<span className="text-3xl">🌶️</span>}
-        speed={30}
-      />
-      <Marquee
-        className="brutal mt-[-6px] rotate-1 bg-lime py-3"
-        items={["Kurkura", "Chatpata", "Dhamakedar", "Masaledaar", "Crunch karo", "Ek aur!"].map((t) => (
-          <span key={t} className="display text-3xl sm:text-4xl">{t}</span>
-        ))}
-        separator={<span className="text-3xl">💥</span>}
-        speed={36}
-        reverse
-      />
-    </div>
+    <Marquee
+      className="bg-ink py-4 text-white"
+      items={["No palm oil", "Asli masala", "Kettle cooked", "Made in India", "100% veg", "Nitrogen packed"].map((t) => (
+        <span key={t} className="display text-3xl sm:text-5xl">{t}</span>
+      ))}
+      separator={<span className="text-2xl text-haldi sm:text-4xl">✦</span>}
+      speed={32}
+    />
   );
 }
 
-/* ──────────────────────────── FLAVOURS ──────────────────────────── */
+/* ─────────────────────────────── LINE-UP ─────────────────────────────── */
 
 export function useFiltered(filter: string) {
   return PRODUCTS.filter((p) => filter === "all" || (filter === "spicy" ? p.spice >= 3 : p.category === filter));
@@ -177,7 +190,7 @@ export function FilterPills({ value, onChange }: { value: string; onChange: (v: 
         <button
           key={f.id}
           onClick={() => onChange(f.id)}
-          className={`brutal-sm shrink-0 rounded-full px-4 py-2 font-extrabold transition ${value === f.id ? "-rotate-2 bg-ink text-white" : "bg-white hover:bg-haldi"}`}
+          className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-extrabold uppercase tracking-wide transition ${value === f.id ? "bg-ink text-white" : "bg-white text-ink/70 hover:text-ink"}`}
         >
           {f.emoji} {f.label}
         </button>
@@ -190,21 +203,18 @@ export function Flavours() {
   const [filter, setFilter] = useState("all");
   const list = useFiltered(filter);
   return (
-    <section className="mx-auto max-w-6xl px-4 pt-16">
+    <section className="mx-auto max-w-6xl px-4 pt-20">
       <Reveal className="text-center">
-        <p className="font-hand text-2xl font-bold text-pink">mood kya hai aaj?</p>
-        <h2 className="display mt-1 text-5xl sm:text-7xl">
-          Pick your <span className="stroke-ink text-haldi">flavour</span>
-        </h2>
-        <Squiggle className="mx-auto mt-2 h-4 w-40 text-pink" />
+        <p className="text-xs font-extrabold uppercase tracking-[.3em] text-pink">The line-up</p>
+        <h2 className="display mt-2 text-6xl sm:text-8xl">Find your flavour</h2>
       </Reveal>
       <div className="mt-6">
         <FilterPills value={filter} onChange={setFilter} />
       </div>
-      <div className="mt-8 grid grid-cols-1 gap-7 min-[480px]:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-4 min-[520px]:grid-cols-2 lg:grid-cols-3">
         {list.map((p, i) => (
           <Reveal key={p.slug} delay={(i % 3) * 80}>
-            <ProductCard product={p} i={i} />
+            <ProductCard product={p} />
           </Reveal>
         ))}
       </div>
@@ -212,81 +222,7 @@ export function Flavours() {
   );
 }
 
-/* ───────────────────────── ANDAR KYA HAI ───────────────────────── */
-
-export function Inside() {
-  const [slug, setSlug] = useState(PRODUCTS[0].slug);
-  const [open, setOpen] = useState(false);
-  const p = findProduct(slug)!;
-  const n = p.ingredients.length;
-
-  return (
-    <section className="relative mt-24 overflow-hidden border-y-[3px] border-ink bg-grape py-16 text-white">
-      <div className="halftone absolute inset-0 opacity-40" />
-      <div className="relative mx-auto max-w-6xl px-4">
-        <Reveal className="text-center">
-          <p className="font-hand text-2xl font-bold text-haldi">no secrets, no chemicals</p>
-          <h2 className="display stroke-ink mt-1 text-5xl text-white sm:text-7xl">Andar kya hai?</h2>
-          <p className="mx-auto mt-2 max-w-md text-white/80">Tap the pack to open it up and see exactly what goes in. Short list, real names.</p>
-        </Reveal>
-
-        <div className="no-scrollbar mt-6 flex gap-2 overflow-x-auto pb-2 sm:justify-center">
-          {PRODUCTS.map((q) => (
-            <button
-              key={q.slug}
-              onClick={() => {
-                setSlug(q.slug);
-                setOpen(false);
-              }}
-              className={`brutal-sm shrink-0 rounded-full px-3 py-1.5 text-sm font-extrabold ${q.slug === slug ? "bg-haldi text-ink" : "bg-white/90 text-ink"}`}
-            >
-              {q.packLine.join(" ")}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative mx-auto mt-6 grid h-[440px] max-w-xl place-items-center sm:h-[500px]">
-          {p.ingredients.map((ing, i) => {
-            const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-            return (
-              <div
-                key={`${slug}-${ing.name}`}
-                className="brutal-sm absolute flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-ink transition-all duration-700 ease-[cubic-bezier(.3,1.5,.5,1)]"
-                style={{
-                  left: `calc(50% + ${open ? Math.cos(a) * 36 : 0}%)`,
-                  top: `calc(50% + ${open ? Math.sin(a) * 42 : 0}%)`,
-                  transform: `translate(-50%, -50%) rotate(${open ? (i % 2 ? 6 : -6) : 0}deg) scale(${open ? 1 : 0.2})`,
-                  opacity: open ? 1 : 0,
-                  transitionDelay: `${i * 70}ms`,
-                  zIndex: 20,
-                }}
-              >
-                <span className="text-3xl">{ing.emoji}</span>
-                <span className="whitespace-nowrap text-sm font-extrabold">{ing.name}</span>
-              </div>
-            );
-          })}
-          <button
-            onClick={() => setOpen((o) => !o)}
-            className={`relative z-10 transition-transform duration-500 ${open ? "scale-75" : "animate-jiggle hover:scale-105"}`}
-            aria-label={open ? "Close pack" : "Open pack"}
-          >
-            <Pack product={p} mood={open ? "shocked" : p.mood} className="h-64 w-auto drop-shadow-[8px_10px_0_rgba(0,0,0,.3)] sm:h-72" />
-            <span className="brutal-sm display absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-haldi px-4 py-1.5 text-lg text-ink">
-              {open ? "Band karo" : "Kholo! 👆"}
-            </span>
-          </button>
-        </div>
-        <p className="text-center text-sm text-white/70">
-          Per 30g: {p.nutrition.energy} kcal · {p.nutrition.protein}g protein · {p.nutrition.fat}g fat ·{" "}
-          <Link href={`/product/${p.slug}`} className="font-bold text-haldi underline">full details →</Link>
-        </p>
-      </div>
-    </section>
-  );
-}
-
-/* ───────────────────────── HOW IT'S MADE ───────────────────────── */
+/* ─────────────────────── SCROLL STORY: FARM → PACK ─────────────────────── */
 
 export const STEPS = [
   { emoji: "🌾", title: "Farm se seedha", text: "Potatoes, bananas & millets bought directly from farmer groups in Punjab, Gujarat & Kerala.", bg: "#B8F34A" },
@@ -299,97 +235,101 @@ export const STEPS = [
 ];
 
 export function HowMade() {
-  const track = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0);
-  const scrollBy = (dir: number) => track.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
+  const [active, setActive] = useState(0);
+  const refs = useRef<(HTMLLIElement | null)[]>([]);
+
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setActive(Number((e.target as HTMLElement).dataset.i))),
+      { rootMargin: "-45% 0px -45% 0px" },
+    );
+    refs.current.forEach((el) => el && io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  const s = STEPS[active];
 
   return (
-    <section id="made" className="relative pt-24">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-4 px-4">
-        <Reveal>
-          <p className="font-hand text-2xl font-bold text-pink">kaise banta hai?</p>
-          <h2 className="display text-5xl sm:text-7xl">
-            How we make <br />
-            <span className="stroke-ink text-masala">the crunch</span>
-          </h2>
-        </Reveal>
-        <div className="flex gap-2">
-          <button onClick={() => scrollBy(-1)} className="btn-pop grid h-12 w-12 place-items-center rounded-full bg-white text-xl" aria-label="Previous">←</button>
-          <button onClick={() => scrollBy(1)} className="btn-pop grid h-12 w-12 place-items-center rounded-full bg-haldi text-xl" aria-label="Next">→</button>
-        </div>
-      </div>
-
-      <div
-        ref={track}
-        onScroll={(e) => {
-          const el = e.currentTarget;
-          setProgress(el.scrollLeft / Math.max(el.scrollWidth - el.clientWidth, 1));
-        }}
-        className="no-scrollbar mt-8 flex snap-x snap-mandatory gap-6 overflow-x-auto px-[max(1rem,calc((100vw-72rem)/2+1rem))] pb-10 pt-4"
-      >
-        {STEPS.map((s, i) => (
-          <figure
-            key={s.title}
-            className="brutal group relative w-64 shrink-0 snap-center rounded-md bg-white p-3 pb-5 transition hover:!rotate-0 hover:-translate-y-2 sm:w-72"
-            style={{ transform: `rotate(${[-3, 2, -1.5, 3, -2, 1.5, -2.5][i]}deg)` }}
-          >
-            <span className="absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-3 bg-haldi/80" aria-hidden />
-            <div className="halftone relative grid aspect-square place-items-center overflow-hidden rounded-sm border-2 border-ink" style={{ background: s.bg }}>
-              <span className="sunburst animate-spin-slow absolute inset-[-30%]" />
-              <span className="relative text-[96px] transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12">{s.emoji}</span>
-              <span className="display stroke-ink absolute left-2 top-1 text-5xl text-white">0{i + 1}</span>
+    <section id="made" className="relative mt-24 bg-ink text-white">
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 lg:grid-cols-2">
+        {/* sticky visual */}
+        <div className="sticky top-[76px] z-10 -mx-5 flex items-center gap-4 bg-ink/90 px-5 py-4 backdrop-blur lg:top-0 lg:mx-0 lg:h-dvh lg:flex-col lg:justify-center lg:bg-transparent lg:backdrop-blur-none">
+          <div className="lg:text-center">
+            <p className="text-xs font-extrabold uppercase tracking-[.3em] text-white/50">How we make the crunch</p>
+            <h2 className="display mt-1 text-3xl sm:text-5xl lg:text-7xl">Farm to pack</h2>
+          </div>
+          <div className="relative ml-auto grid h-16 w-16 shrink-0 place-items-center lg:ml-0 lg:mt-8 lg:h-[340px] lg:w-[340px]">
+            <span className="absolute inset-0 rounded-full blur-2xl transition-colors duration-700 lg:blur-3xl" style={{ background: s.bg, opacity: 0.55 }} />
+            <span className="absolute inset-0 rounded-full border border-white/15 transition-colors duration-700 lg:inset-6" style={{ background: `${s.bg}30` }} />
+            <span key={active} className="animate-pop-in relative text-4xl lg:text-[150px]">{s.emoji}</span>
+            <Chip className="animate-drift absolute -right-6 top-2 hidden w-20 lg:block" style={{ "--r": "24deg" } as React.CSSProperties} />
+            <Chip className="animate-drift absolute -left-4 bottom-6 hidden w-14 blur-[1px] lg:block" style={{ "--r": "-40deg", "--dur": "8s" } as React.CSSProperties} />
+          </div>
+          {/* progress */}
+          <div className="hidden w-64 lg:mt-8 lg:block">
+            <div className="h-1 overflow-hidden rounded-full bg-white/15">
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${((active + 1) / STEPS.length) * 100}%`, background: s.bg }} />
             </div>
-            <figcaption className="mt-3 px-1">
-              <p className="display text-2xl">{s.title}</p>
-              <p className="font-hand mt-1 text-[15px] leading-snug text-ink/80">{s.text}</p>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-      <div className="mx-auto h-3 max-w-md overflow-hidden rounded-full border-2 border-ink bg-white">
-        <div className="h-full rounded-full bg-pink transition-[width]" style={{ width: `${10 + progress * 90}%` }} />
+            <p className="mt-2 text-center text-xs font-bold tracking-[.3em] text-white/50">STEP {active + 1} OF {STEPS.length}</p>
+          </div>
+        </div>
+
+        {/* scrolling steps */}
+        <ol className="pb-[20vh] pt-[6vh] lg:py-[35vh]">
+          {STEPS.map((st, i) => (
+            <li
+              key={st.title}
+              data-i={i}
+              ref={(el) => {
+                refs.current[i] = el;
+              }}
+              className={`py-[9vh] transition-all duration-500 lg:py-[14vh] ${i === active ? "opacity-100" : "opacity-25"}`}
+            >
+              <p className="display text-7xl transition-colors duration-500 lg:text-8xl" style={{ color: i === active ? st.bg : undefined }}>
+                0{i + 1}
+              </p>
+              <h3 className="display mt-2 text-4xl lg:text-6xl">{st.title}</h3>
+              <p className="mt-3 max-w-md text-lg text-white/75">{st.text}</p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
 }
 
-/* ───────────────────────────── COMBOS ───────────────────────────── */
+/* ─────────────────────────────── COMBOS ─────────────────────────────── */
 
-export function ComboCard({ combo, i = 0 }: { combo: Combo; i?: number }) {
+export function ComboCard({ combo }: { combo: Combo; i?: number }) {
   const addFrom = useAddFrom();
   const packs = combo.items.map((s) => findProduct(s)!);
   const full = packs.reduce((s, p) => s + p.price, 0);
-  const unique = [...new Map(packs.map((p) => [p.slug, p])).values()];
+  const unique = [...new Map(packs.map((p) => [p.slug, p])).values()].slice(0, 4);
   return (
-    <article className="brutal group relative overflow-hidden rounded-[28px] bg-white" style={{ transform: `rotate(${i % 2 ? 1 : -1}deg)` }}>
-      <div className="halftone relative flex h-52 items-end justify-center overflow-hidden border-b-[3px] border-ink pb-2" style={{ background: combo.color }}>
-        <span className="sunburst animate-spin-slow absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2" />
-        {unique.slice(0, 5).map((p, j, arr) => {
-          const mid = (arr.length - 1) / 2;
-          return (
-            <div
-              key={p.slug}
-              className="relative -mx-5 transition-transform duration-500 group-hover:-translate-y-3"
-              style={{ transform: `rotate(${(j - mid) * 12}deg) translateY(${Math.abs(j - mid) * 12}px)`, zIndex: 10 - Math.abs(j - mid), transitionDelay: `${j * 50}ms` }}
-            >
-              <Pack product={p} className="h-40 w-auto" showFace={j === Math.round(mid)} />
-            </div>
-          );
-        })}
-        <Burst color="#FFD23F" className="absolute right-3 top-3 h-20 w-20 text-lg">
-          {Math.round((1 - combo.price / full) * 100)}%<br />off
-        </Burst>
-        <span className="absolute left-4 top-3 text-4xl">{combo.emoji}</span>
+    <article
+      className="group relative flex h-full min-h-[300px] flex-col justify-end overflow-hidden rounded-[32px] p-6 text-white shadow-[0_30px_50px_-30px_rgba(26,11,46,.7)]"
+      style={{ background: `linear-gradient(135deg, ${combo.color} 0%, #1a0b2e 130%)` }}
+    >
+      <div className="absolute -right-4 -top-2 flex">
+        {unique.map((p, j) => (
+          <div key={p.slug} className="-ml-12 transition-transform duration-500 group-hover:-translate-y-2" style={{ transform: `rotate(${(j - 1.5) * 9}deg)`, transitionDelay: `${j * 40}ms` }}>
+            <Pack product={p} className="h-44 w-auto drop-shadow-[0_16px_16px_rgba(0,0,0,.4)] sm:h-52" showFace={j % 2 === 0} />
+          </div>
+        ))}
       </div>
-      <div className="p-5">
-        <h3 className="display text-3xl">{combo.name}</h3>
-        <p className="font-hand mt-1 text-ink/75">{combo.tagline}</p>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <span className="glass absolute left-5 top-5 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wider">
+        {combo.emoji} Save {Math.round((1 - combo.price / full) * 100)}%
+      </span>
+      <div className="relative mt-40">
+        <p className="text-xs font-extrabold uppercase tracking-[.25em] text-white/60">{combo.items.length} packs</p>
+        <h3 className="display mt-1 text-4xl sm:text-5xl">{combo.name}</h3>
+        <p className="mt-1.5 max-w-sm text-sm font-medium text-white/75">{combo.tagline}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-4">
           <p>
-            <span className="display text-3xl">{rupees(combo.price)}</span>
-            <span className="ml-2 text-sm font-bold text-ink/40 line-through">{rupees(full)}</span>
+            <span className="display text-4xl">{rupees(combo.price)}</span>
+            <span className="ml-2 text-sm font-bold text-white/45 line-through">{rupees(full)}</span>
           </p>
-          <button onClick={addFrom({ type: "combo", id: combo.id })} className="btn-pop rounded-full bg-pink px-5 py-2.5 font-extrabold text-white">
+          <button onClick={addFrom({ type: "combo", id: combo.id })} className="btn-pop rounded-full bg-white px-5 py-2.5 text-sm font-extrabold uppercase tracking-wide text-ink">
             Add combo +
           </button>
         </div>
@@ -402,15 +342,13 @@ export function Combos() {
   return (
     <section id="combos" className="mx-auto max-w-6xl px-4 pt-24">
       <Reveal className="text-center">
-        <p className="font-hand text-2xl font-bold text-pink">zyada packets, kam paise</p>
-        <h2 className="display text-5xl sm:text-7xl">
-          Combo <span className="stroke-ink text-pink">Dhamaka</span>
-        </h2>
+        <p className="text-xs font-extrabold uppercase tracking-[.3em] text-pink">More packs, less paisa</p>
+        <h2 className="display mt-2 text-6xl sm:text-8xl">Combo deals</h2>
       </Reveal>
-      <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
         {COMBOS.map((c, i) => (
           <Reveal key={c.id} delay={(i % 2) * 100}>
-            <ComboCard combo={c} i={i} />
+            <ComboCard combo={c} />
           </Reveal>
         ))}
       </div>
@@ -418,113 +356,87 @@ export function Combos() {
   );
 }
 
-/* ───────────────────────── TRUCK ART BANNER ───────────────────────── */
+/* ─────────────────────────── BUILD-A-BOX BANNER ─────────────────────────── */
 
 export function TruckBanner() {
   return (
     <section className="mx-auto max-w-6xl px-4 pt-24">
       <Reveal>
-        <div className="truck-border brutal rounded-[36px] p-3 sm:p-4">
-          <div className="relative overflow-hidden rounded-[26px] border-[3px] border-ink bg-ink px-6 py-10 text-center sm:py-14">
-            <div className="pointer-events-none absolute inset-0 opacity-20" style={{ background: "radial-gradient(circle at 20% 20%, #ff3d7f, transparent 40%), radial-gradient(circle at 80% 80%, #ffd23f, transparent 40%)" }} />
-            <div className="absolute left-4 top-4 flex gap-1 sm:left-8 sm:top-8" aria-hidden>
-              {["🧿", "🌼", "🧿"].map((e, i) => (
-                <span key={i} className="animate-jiggle text-3xl" style={{ animationDelay: `${i * 0.2}s` }}>{e}</span>
-              ))}
-            </div>
-            <div className="absolute right-4 top-4 flex gap-1 sm:right-8 sm:top-8" aria-hidden>
-              {["🌼", "🧿", "🌼"].map((e, i) => (
-                <span key={i} className="animate-jiggle text-3xl" style={{ animationDelay: `${i * 0.3}s` }}>{e}</span>
-              ))}
-            </div>
-            <p className="font-hand text-lg text-lime">— Horn OK Please —</p>
-            <h2 className="display mt-2 text-5xl leading-[0.95] text-haldi sm:text-8xl" style={{ textShadow: "4px 4px 0 #ff3d7f, 8px 8px 0 #4cc9f0" }}>
-              Snack OK <br />Please!
-            </h2>
-            <p className="mx-auto mt-5 max-w-md text-lg font-semibold text-cream">
-              Build your own snack box. Pick any <b className="text-lime">6 or 10 packs</b>, mix & match flavours and get up to <b className="text-pink">15% off</b>.
-            </p>
-            <Link href="/box" className="btn-pop display mt-7 inline-block rounded-full bg-pink px-8 py-4 text-2xl text-white">
-              Build my box 📦
-            </Link>
-            <p className="font-hand mt-6 text-sm text-cream/60">Buri nazar wale, tera packet khaali 😜</p>
-          </div>
+        <div className="truck-border relative overflow-hidden rounded-[40px] px-6 py-14 text-center text-white sm:py-20">
+          <Chip className="animate-drift absolute left-[5%] top-8 w-24" style={{ "--r": "-25deg" } as React.CSSProperties} />
+          <Chip className="animate-drift absolute bottom-8 right-[6%] w-32 blur-[1px]" style={{ "--r": "35deg", "--dur": "7s" } as React.CSSProperties} />
+          <Chip className="animate-drift absolute right-[24%] top-6 w-12 blur-[2px]" style={{ "--r": "70deg", "--dur": "9s" } as React.CSSProperties} />
+          <p className="relative text-xs font-extrabold uppercase tracking-[.3em] text-white/80">Snack OK Please</p>
+          <h2 className="display pop-shadow relative mt-3 text-6xl sm:text-9xl">
+            Your box. <br />Your rules.
+          </h2>
+          <p className="relative mx-auto mt-5 max-w-md text-lg font-medium text-white/90">
+            Pick any 6 or 10 packs, mix every flavour you love, and save up to 15%.
+          </p>
+          <Link href="/box" className="btn-pop relative mt-7 inline-block rounded-full bg-ink px-8 py-4 text-sm font-extrabold uppercase tracking-widest text-white">
+            Build my box →
+          </Link>
         </div>
       </Reveal>
     </section>
   );
 }
 
-/* ──────────────────────── SUBSCRIBE + BULK ──────────────────────── */
+/* ─────────────────────────── SUBSCRIBE + BULK ─────────────────────────── */
 
 export function Duo() {
+  const tiles = [
+    { href: "/subscribe", kicker: "Munch Club", title: "Never run out", text: "Fresh packs at your door every week or month. Free delivery. Pause anytime.", cta: "From ₹169 / week", glow: "#FFD23F", emoji: "🔁" },
+    { href: "/bulk", kicker: "Bulk & gifting", title: "Party-size orders", text: "Diwali boxes, wedding favours, office pantry — 25 to 25,000 packs with custom branding.", cta: "Get a quote", glow: "#4CC9F0", emoji: "🎁" },
+  ];
   return (
-    <section className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 pt-24 md:grid-cols-2">
-      <Reveal>
-        <Link href="/subscribe" className="brutal group relative block h-full overflow-hidden rounded-[32px] bg-haldi p-7 transition hover:-rotate-1">
-          <div className="halftone absolute inset-0" />
-          <span className="absolute -right-6 -top-6 text-[140px] transition-transform duration-500 group-hover:rotate-[360deg]">🔁</span>
-          <div className="relative">
-            <p className="font-hand text-xl font-bold">har hafte, bina bhoole</p>
-            <h3 className="display mt-1 text-5xl">Munch <br />Subscription</h3>
-            <p className="mt-3 max-w-xs font-semibold">Fresh packs at your door every week or month. Free delivery. Pause or cancel anytime.</p>
-            <span className="btn-pop display mt-5 inline-block rounded-full bg-ink px-6 py-3 text-lg text-white">From ₹169/week →</span>
-          </div>
-        </Link>
-      </Reveal>
-      <Reveal delay={100}>
-        <Link href="/bulk" className="brutal group relative block h-full overflow-hidden rounded-[32px] bg-sky p-7 transition hover:rotate-1">
-          <div className="halftone absolute inset-0" />
-          <span className="absolute -right-4 -top-4 text-[130px] transition-transform duration-500 group-hover:scale-125">🎁</span>
-          <div className="relative">
-            <p className="font-hand text-xl font-bold">shaadi, Diwali, office party?</p>
-            <h3 className="display mt-1 text-5xl">Bulk & <br />Gifting</h3>
-            <p className="mt-3 max-w-xs font-semibold">Custom gift boxes, wedding favours, corporate pantry — from 25 to 25,000 packs. Custom branding available.</p>
-            <span className="btn-pop display mt-5 inline-block rounded-full bg-ink px-6 py-3 text-lg text-white">Get a quote →</span>
-          </div>
-        </Link>
-      </Reveal>
+    <section className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 pt-6 md:grid-cols-2">
+      {tiles.map((t, i) => (
+        <Reveal key={t.href} delay={i * 100}>
+          <Link href={t.href} className="group relative block h-full overflow-hidden rounded-[32px] bg-ink p-8 text-white">
+            <span className="absolute -right-16 -top-16 h-64 w-64 rounded-full opacity-50 blur-3xl transition-opacity duration-500 group-hover:opacity-90" style={{ background: t.glow }} />
+            <span className="absolute right-6 top-6 text-6xl transition-transform duration-500 group-hover:rotate-12 group-hover:scale-125">{t.emoji}</span>
+            <p className="relative text-xs font-extrabold uppercase tracking-[.3em]" style={{ color: t.glow }}>{t.kicker}</p>
+            <h3 className="display relative mt-2 text-5xl sm:text-6xl">{t.title}</h3>
+            <p className="relative mt-3 max-w-sm font-medium text-white/70">{t.text}</p>
+            <span className="relative mt-6 inline-flex items-center gap-2 text-sm font-extrabold uppercase tracking-widest">
+              {t.cta} <span className="transition-transform group-hover:translate-x-2">→</span>
+            </span>
+          </Link>
+        </Reveal>
+      ))}
     </section>
   );
 }
 
-/* ───────────────────────────── REVIEWS ───────────────────────────── */
+/* ─────────────────────────────── REVIEWS ─────────────────────────────── */
 
 const REVIEWS = [
-  { who: "Rahul", city: "Delhi", face: "🧔", text: "Bhai, Peri Peri Pataka ne rula diya. 10/10, would cry again.", bg: "#FF3D7F" },
-  { who: "Sneha", city: "Bengaluru", face: "👩‍💻", text: "Office mein ek packet khola. 2 minute mein khatam. Ab poora dabba mangwaya hai.", bg: "#FFD23F" },
-  { who: "Anjali", city: "Pune", face: "👩‍👧", text: "Ragi Crunchies in my kids' tiffin — finally a healthy snack they actually finish!", bg: "#B8F34A" },
-  { who: "Karan", city: "Gurugram", face: "🧑‍💼", text: "Ordered 300 Diwali boxes for our team. Everyone loved them. Custom sleeve was a nice touch.", bg: "#4CC9F0" },
-  { who: "Meera", city: "Kochi", face: "👵", text: "Kerala banana chips taste exactly like ammachi used to make. Coconut oil, proper!", bg: "#FF7A00" },
-  { who: "Imran", city: "Hyderabad", face: "🧑‍🎓", text: "Bhujia Bomb + chai = hostel ka best combo. Subscription le liya.", bg: "#B794FF" },
+  { who: "Rahul", city: "Delhi", text: "Bhai, Peri Peri Pataka ne rula diya. 10/10, would cry again." },
+  { who: "Sneha", city: "Bengaluru", text: "Office mein ek packet khola. 2 minute mein khatam. Ab poora dabba mangwaya hai." },
+  { who: "Anjali", city: "Pune", text: "Ragi Crunchies in my kids' tiffin — finally a healthy snack they actually finish!" },
+  { who: "Karan", city: "Gurugram", text: "Ordered 300 Diwali boxes for our team. Everyone loved them." },
+  { who: "Meera", city: "Kochi", text: "Kerala banana chips taste exactly like ammachi used to make." },
+  { who: "Imran", city: "Hyderabad", text: "Bhujia Bomb + chai = hostel ka best combo. Subscription le liya." },
 ];
 
 export function Reviews() {
   return (
     <section className="pt-24">
       <Reveal className="px-4 text-center">
-        <p className="font-hand text-2xl font-bold text-pink">log kya kahenge? yeh kehte hain 👇</p>
-        <h2 className="display text-5xl sm:text-7xl">
-          Crunch <span className="stroke-ink text-lime">reviews</span>
-        </h2>
+        <p className="text-xs font-extrabold uppercase tracking-[.3em] text-pink">Crunch reviews</p>
+        <h2 className="display mt-2 text-6xl sm:text-8xl">India is munching</h2>
       </Reveal>
       <Marquee
-        className="mt-10 py-4"
-        speed={50}
+        className="mt-8 py-4"
+        speed={55}
         separator=""
-        items={REVIEWS.map((r, i) => (
-          <figure key={r.who} className="w-72 whitespace-normal" style={{ transform: `rotate(${i % 2 ? 2 : -2}deg)` }}>
-            <blockquote className="brutal relative rounded-3xl bg-white p-5 text-left">
-              <p className="text-lg">⭐⭐⭐⭐⭐</p>
-              <p className="font-hand mt-1 text-lg leading-snug">&ldquo;{r.text}&rdquo;</p>
-              <span className="absolute -bottom-4 left-10 h-6 w-6 rotate-45 border-b-[3px] border-r-[3px] border-ink bg-white" />
-            </blockquote>
-            <figcaption className="mt-6 flex items-center gap-3 pl-4">
-              <span className="brutal-sm grid h-12 w-12 place-items-center rounded-full text-2xl" style={{ background: r.bg }}>{r.face}</span>
-              <span className="text-left">
-                <span className="display block text-lg">{r.who}</span>
-                <span className="text-sm font-semibold text-ink/60">{r.city}</span>
-              </span>
+        items={REVIEWS.map((r) => (
+          <figure key={r.who} className="brutal w-80 whitespace-normal rounded-3xl bg-white p-6 text-left">
+            <p className="text-sm tracking-widest text-masala">★★★★★</p>
+            <blockquote className="mt-2 text-lg font-semibold leading-snug">“{r.text}”</blockquote>
+            <figcaption className="mt-4 text-sm font-bold text-ink/50">
+              {r.who} · {r.city}
             </figcaption>
           </figure>
         ))}
@@ -532,4 +444,3 @@ export function Reviews() {
     </section>
   );
 }
-

@@ -72,7 +72,7 @@ export default function OrderPage() {
               <p className="font-hand text-2xl font-bold text-pink">
                 {fresh && order.status === "new" ? `Shukriya, ${order.name}! 🙏` : `Hello ${order.name}!`}
               </p>
-              <h1 className="display stroke-ink pop-shadow mt-1 text-5xl text-haldi sm:text-7xl">
+              <h1 className="display stroke-ink mt-1 text-5xl text-pink sm:text-7xl">
                 {cancelled ? "Cancelled" : ORDER_STATUSES[step]?.label}
               </h1>
               <p className="brutal-sm mt-4 inline-block rounded-full bg-white px-4 py-1 font-mono font-bold">#{order.id}</p>
